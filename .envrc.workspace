@@ -1,0 +1,27 @@
+# This file is meant to filter the unnecessary nix paths from the shell paths.
+# Filtering the paths is meant to solve issues related to xcode not being able to apple clang in the path.
+# Related documentation can be found here: https://github.com/jetify-com/devbox/issues/1509
+
+export ROOT_WORKSPACE=$PWD
+
+read_devbox_nix_paths() {
+    local env_path_key='.Variables.PATH.Value'
+    local devbox_env_cache_file="$ROOT_WORKSPACE/.devbox/.nix-print-dev-env-cache"
+    local devbox_nix_paths=$(jq -r $env_path_key < $devbox_env_cache_file)
+    echo $devbox_nix_paths
+}
+
+filter_paths() {
+    local all_paths=$1
+    local exclude_paths=$2
+    local path_separator=":"
+    local split_separator="\n"
+
+    echo "$all_paths" \
+    | tr $path_separator $split_separator \
+    | grep -v -F -x -f <(echo "$exclude_paths" | tr $path_separator $split_separator) \
+    | tr $split_separator $path_separator \
+    | sed 's/:$//'
+}
+
+export PATH=$(filter_paths "$PATH" "$(read_devbox_nix_paths)")

@@ -1,0 +1,4 @@
+source .envrc.workspace
+
+export WORKSPACE=$PWD
+export PATH=$PWD/node_modules/.bin:$PATH
